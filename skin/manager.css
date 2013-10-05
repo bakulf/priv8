@@ -1,0 +1,284 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is the Extension Manager UI.
+ *
+ * The Initial Developer of the Original Code is
+ * the Mozilla Foundation.
+ * Portions created by the Initial Developer are Copyright (C) 2010
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *   Blair McBride <bmcbride@mozilla.com>
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPL"), or
+ * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+ * in which case the provisions of the GPL or the LGPL are applicable instead
+ * of those above. If you wish to allow use of your version of this file only
+ * under the terms of either the GPL or the LGPL, and not to allow others to
+ * use your version of this file under the terms of the MPL, indicate your
+ * decision by deleting the provisions above and replace them with the notice
+ * and other provisions required by the GPL or the LGPL. If you do not delete
+ * the provisions above, a recipient may use your version of this file under
+ * the terms of any one of the MPL, the GPL or the LGPL.
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+@namespace xhtml "http://www.w3.org/1999/xhtml";
+
+/* HTML link elements do weird things to the layout if they are not hidden */
+xhtml|link {
+  display: none;
+}
+
+#categories {
+  -moz-binding: url("chrome://mozapps/content/extensions/extensions.xml#categories-list");
+}
+
+.category {
+  -moz-binding: url("chrome://mozapps/content/extensions/extensions.xml#category");
+}
+
+#priv8-page:not([warning]) #list-view > .global-warning-container {
+  display: none;
+}
+
+/* Elements in unselected richlistitems cannot be focused */
+richlistitem:not([selected]) * {
+  -moz-user-focus: ignore;
+}
+
+#header-search {
+  width: 22em;
+}
+
+#priv8-page {
+  -moz-appearance: none;
+  padding: 18px;
+  background-color: Window;
+  background-image: -moz-linear-gradient(top, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0) 160px),
+                    -moz-linear-gradient(-moz-dialog, Window 160px);
+  color: WindowText;
+}
+
+#view-port-container {
+  /* Needed to allow the radius to clip the inner content, see bug 595656 */
+  /* Disabled because of bug 623615
+  overflow: hidden;
+  */
+  background-color: -moz-Field;
+  color: -moz-FieldText;
+  border: 1px solid ThreeDShadow;
+  border-radius: 5px;
+}
+
+
+/*** category selector ***/
+
+#categories {
+  -moz-appearance: none;
+  border: none;
+  -moz-margin-end: -1px;
+  background-color: transparent;
+  position: relative;
+  margin-top: 41px;
+}
+
+.category {
+  -moz-appearance: none;
+  border-width: 1px;
+  -moz-border-end-width: 0;
+  border-style: solid;
+  border-color: transparent;
+  padding: 10px 4px;
+  -moz-box-align: center;
+  overflow: hidden;
+  min-height: 0;
+  color: WindowText;
+}
+
+.category:-moz-locale-dir(ltr) {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+.category:-moz-locale-dir(rtl) {
+  border-top-right-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+.category[disabled] {
+  border-top: 0;
+  border-bottom: 0;
+  height: 0;
+  opacity: 0;
+  -moz-transition-property: height, opacity;
+  -moz-transition-duration: 1s, 0.8s;
+}
+
+.category:not([disabled]) {
+  height: 52px;
+  -moz-transition-property: height, opacity;
+  -moz-transition-duration: 1s, 0.8s;
+}
+
+.category[selected] {
+  background-color: -moz-Field;
+  color: -moz-FieldText;
+  border-color: ThreeDShadow;
+}
+
+.category-name {
+  font-size: 150%;
+}
+
+/* Maximize the size of the viewport when the window is small */
+@media all and (max-width: 800px) {
+  .category-name {
+    display: none;
+  }
+}
+
+.category-badge {
+  background-color: Highlight;
+  padding: 2px 8px;
+  margin: 6px 0;
+  border-radius: 10000px;
+  color: HighlightText;
+  font-weight: bold;
+  text-align: center;
+}
+
+.category-badge[value="0"] {
+  visibility: hidden;
+}
+
+.category-icon {
+  width: 32px;
+  height: 32px;
+  -moz-margin-start: 6px;
+}
+
+#category-settings > .category-icon {
+  list-style-image: url("chrome://priv8/skin/manager-settings.png");
+}
+
+#category-about > .category-icon {
+  list-style-image: url("chrome://priv8/skin/manager-about.png");
+}
+
+/*** header ***/
+
+#header {
+  margin-bottom: 18px;
+}
+
+.nav-button {
+  min-width: 0;
+}
+
+#back-btn:-moz-locale-dir(ltr) {
+  list-style-image: url("moz-icon://stock/gtk-go-back-ltr?size=toolbar");
+}
+
+#forward-btn:-moz-locale-dir(ltr) {
+  list-style-image: url("moz-icon://stock/gtk-go-forward-ltr?size=toolbar");
+}
+
+#back-btn:-moz-locale-dir(rtl) {
+  list-style-image: url("moz-icon://stock/gtk-go-back-rtl?size=toolbar");
+}
+
+#forward-btn:-moz-locale-dir(rtl) {
+  list-style-image: url("moz-icon://stock/gtk-go-forward-rtl?size=toolbar");
+}
+
+#back-btn[disabled="true"]:-moz-locale-dir(ltr) {
+  list-style-image: url("moz-icon://stock/gtk-go-back-ltr?size=toolbar&state=disabled");
+}
+
+#forward-btn[disabled="true"]:-moz-locale-dir(ltr) {
+  list-style-image: url("moz-icon://stock/gtk-go-forward-ltr?size=toolbar&state=disabled");
+}
+
+#back-btn[disabled="true"]:-moz-locale-dir(rtl) {
+  list-style-image: url("moz-icon://stock/gtk-go-back-rtl?size=toolbar&state=disabled");
+}
+
+#forward-btn[disabled="true"]:-moz-locale-dir(rtl) {
+  list-style-image: url("moz-icon://stock/gtk-go-forward-rtl?size=toolbar&state=disabled");
+}
+
+#header-utils-btn {
+  min-width: 4.5em;
+}
+
+#header-utils-btn .toolbarbutton-icon {
+  list-style-image: url("moz-icon://stock/gtk-preferences?size=toolbar");
+}
+
+#header-utils-btn:-moz-focusring > .button-box {
+  border: none;
+}
+
+#header-search {
+  margin: 0;
+}
+
+.view-header {
+  padding: 4px;
+  margin: 0;
+  min-height: 41px;
+  background-color: ThreeDHighlight;
+  border-bottom: 1px solid ThreeDShadow;
+}
+
+
+/*** sorters ***/
+
+.sort-controls {
+  -moz-appearance: none;
+}
+
+.sorter[checkState="1"] .button-icon {
+  display: -moz-box;
+  list-style-image: url("moz-icon://stock/gtk-sort-descending?size=16");
+}
+
+.sorter[checkState="2"] .button-icon {
+  display: -moz-box;
+  list-style-image: url("moz-icon://stock/gtk-sort-ascending?size=16");
+}
+
+
+/*** buttons ***/
+
+.button-link {
+  -moz-appearance: none;
+  background: transparent;
+  border: none;
+  text-decoration: underline;
+  color: -moz-nativehyperlinktext;
+  cursor: pointer;
+  min-width: 0;
+  margin: 0 6px;
+}
+
+.button-link:active {
+  color: -moz-activehyperlinktext;
+}
+
+.header-button .toolbarbutton-text {
+  display: none;
+}

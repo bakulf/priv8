@@ -1,0 +1,10 @@
+<!ENTITY Priv8.title "Priv8">
+<!ENTITY Priv8.settings "Settings">
+<!ENTITY Priv8.tooltip "Click here to configure Priv8">
+<!ENTITY Priv8.about "About">
+
+<!ENTITY Priv8.titleManager "Priv8 manager">
+<!ENTITY Priv8.settingsPage "Settings">
+<!ENTITY Priv8.settingsTooltip "Configure your priv8">
+<!ENTITY Priv8.aboutPage "About">
+<!ENTITY Priv8.aboutTooltip "About Priv8">
