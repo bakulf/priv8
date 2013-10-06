@@ -89,7 +89,7 @@ const priv8 = {
     }
 
     var tab = browser.addTab("about:blank");
-    browser.selectedTab = tab;
+    // TODO: browser.selectedTab = tab;
 
     tab = browser.getBrowserForTab(tab);
     var docShell = tab.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)

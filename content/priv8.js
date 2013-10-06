@@ -235,6 +235,21 @@ const Priv8Overlay = {
     }
 
     browser.addEventListener("load", onLoad, true);
+    browser.addEventListener('visibilitychange', function() {
+      var docShell = browser.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                                          .getInterface(Components.interfaces.nsIDocShell);
+
+      var appId = docShell.appId;
+      if (appId != Components.interfaces.nsIScriptSecurityManager.NO_APP_ID &&
+          appId != Components.interfaces.nsIScriptSecurityManager.UNKNOWN_APP_ID) {
+        Priv8Overlay._changeOpacity(aTab, browser.contentDocument.hidden ? '0.5' : '1');
+      }
+    }, false);
+  },
+
+  _changeOpacity: function(aTab, aOpacity) {
+    debug("change opacity: " + aOpacity);
+    aTab.style.setProperty('opacity', aOpacity, 'important');
   },
 
   _setColor: function(aTab, aAppId) {
