@@ -3,7 +3,7 @@
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
 
-let EXPORTED_SYMBOLS = ["priv8"];
+this.EXPORTED_SYMBOLS = ["priv8"];
 
 function debug(msg) {
   dump("Priv8.jsm - " + msg + "\n");
@@ -133,8 +133,8 @@ const priv8 = {
     const serviceMarker = "service,";
 
     // First create observers from the category manager.
-    let cm =
-      Components.classes["@mozilla.org/categorymanager;1"].getService(Components.interfaces.nsICategoryManager);
+    let cm = Components.classes["@mozilla.org/categorymanager;1"]
+                       .getService(Components.interfaces.nsICategoryManager);
     let enumerator = cm.enumerateCategory("webapps-clear-data");
 
     let observers = [];

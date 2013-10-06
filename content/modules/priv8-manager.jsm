@@ -8,7 +8,7 @@ function debug(msg) {
   dump("Priv8-manager.jsm - " + msg + "\n");
 }
 
-let EXPORTED_SYMBOLS = ["Priv8ManagerData"];
+this.EXPORTED_SYMBOLS = ["Priv8ManagerData"];
 
 // Translate a page
 function priv8Translate(aStrbundle, aBrowser) {
@@ -69,20 +69,22 @@ Priv8ManagerSettings.prototype = {
   },
 
   // For progress listener
-  onLocationChange: function(aWebProgress, aRequest, aLocation) { },
+  onLocationChange: function(aWebProgress, aRequest, aLocation) {},
 
-  onProgressChange: function() { },
+  onProgressChange: function() {},
 
-  onSecurityChange: function(aWebProgress, aRequest, aState) { },
+  onSecurityChange: function(aWebProgress, aRequest, aState) {},
 
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
     // Don't care about state but window
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW)))
+    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW))) {
       return;
+    }
 
     // Only when the operation is concluded
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_STOP)))
+    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_STOP))) {
       return;
+    }
 
     // Translate
     priv8Translate(this._document.getElementById("priv8strings"), this._browser);
@@ -216,8 +218,9 @@ Priv8ManagerSettings.prototype = {
                             newName, null, {value:0})) {
       newName = newName.value;
 
-      if (newName == aJar.name)
+      if (newName == aJar.name) {
         return false;
+      }
 
       priv8.renameCookieJar(aJar.id, newName);
       this.show();
@@ -249,7 +252,7 @@ Priv8ManagerSettings.prototype = {
     }
   },
 
-  onStatusChange: function() { },
+  onStatusChange: function() {},
 
   QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIWebProgressListener,
                        Components.interfaces.nsISupportsWeakReference])
@@ -293,36 +296,39 @@ Priv8ManagerAbout.prototype = {
   },
 
   // For progress listener
-  onLocationChange: function(aWebProgress, aRequest, aLocation) { },
+  onLocationChange: function(aWebProgress, aRequest, aLocation) {},
 
-  onProgressChange: function() { },
+  onProgressChange: function() {},
 
-  onSecurityChange: function(aWebProgress, aRequest, aState) { },
+  onSecurityChange: function(aWebProgress, aRequest, aState) {},
 
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
     // Don't care about state but window
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW)))
+    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW))) {
       return;
+    }
 
     // Only when the operation is concluded
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_STOP)))
+    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_STOP))) {
       return;
+    }
 
     // Translate
     priv8Translate(this._document.getElementById("priv8strings"), this._browser);
   },
 
-  onStatusChange: function() { },
+  onStatusChange: function() {},
 
   QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIWebProgressListener,
                                          Components.interfaces.nsISupportsWeakReference])
 };
 
 // Object data
-function Priv8ManagerData(aWindow, document) {
+this.Priv8ManagerData = function(aWindow, document) {
   this.initialize(aWindow, document);
 }
-Priv8ManagerData.prototype = {
+
+this.Priv8ManagerData.prototype = {
   document : null,
 
   node : null,

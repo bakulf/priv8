@@ -15,12 +15,12 @@ if (!("defineLazyServiceGetter" in XPCOMUtils)) {
 }
 
 // Load dependences:
-XPCOMUtils.defineLazyServiceGetter(this, "loader", "@mozilla.org/moz/jssubscript-loader;1", "mozIJSSubScriptLoader");
+XPCOMUtils.defineLazyServiceGetter(this, "loader",
+                                   "@mozilla.org/moz/jssubscript-loader;1",
+                                   "mozIJSSubScriptLoader");
 
-/**
- * Application startup/shutdown observer, triggers init()/shutdown() methods in 'priv8' object.
- * @constructor
- */
+// Application startup/shutdown observer, triggers init()/shutdown() methods in
+// 'priv8' object.
 function Priv8Initializer() {}
 Priv8Initializer.prototype = {
   classDescription: "Priv8 initializer",
