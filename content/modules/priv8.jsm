@@ -2,6 +2,7 @@
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("resource://gre/modules/Services.jsm");
+Components.utils.import("chrome://priv8/content/modules/priv8-colors.jsm");
 
 this.EXPORTED_SYMBOLS = ["priv8"];
 
@@ -96,11 +97,18 @@ const priv8 = {
     let self = this;
     function onLoad() {
       debug("Tab loaded!");
+      // First loading opens the waiting page - we are still with the old appId
+      if (tab.currentURI.spec == 'about:blank') {
+        tab.loadURI('chrome://priv8/content/wait.html');
+        return;
+      }
+
+      // Here we are running with the right appId.
       tab.removeEventListener("load", onLoad, true);
 
       var url = self._cookieJars[aJarId].url;
       if (typeof(url) != "string" || url.length == 0) {
-        url = "chrome://priv8/content/cookiejar.html";
+        url = "chrome://priv8/content/readme.html";
       }
 
       debug("Opening: " + url);
@@ -195,12 +203,12 @@ const priv8 = {
   },
 
   _randomColor: function() {
-    function rn() {
-      // I don't care about 'A-F' numbers. I need something readable.
-      return Math.round(Math.random() * 10);
+    let colors = [];
+    for (aColor in priv8colors) {
+      colors.push(aColor);
     }
 
-    return '#' + rn() + rn() + rn() + rn() + rn() + rn();
+    return colors[Math.floor(Math.random() * colors.length)];
   },
 
   _newCookieJarId: function() {

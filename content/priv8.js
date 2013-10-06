@@ -17,13 +17,19 @@ window.addEventListener("load", function() {
     Priv8Overlay.addRemoveIcon();
   }
 
-  var container = gBrowser.tabContainer;
+  var mainWindow = window.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                         .getInterface(Components.interfaces.nsIWebNavigation)
+                         .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
+                         .rootTreeItem
+                         .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                         .getInterface(Components.interfaces.nsIDOMWindow);
+  var container = mainWindow.gBrowser.tabContainer;
   container.addEventListener("TabOpen", function(event) {
-    Priv8Overlay.tabOpened(gBrowser, event.target);
+    Priv8Overlay.tabOpened(mainWindow.gBrowser, event.target);
   }, false);
 
-  for (let i = 0; i < gBrowser.tabContainer.childNodes.length; ++i) {
-    Priv8Overlay.tabOpened(gBrowser, gBrowser.tabContainer.childNodes[i]);
+  for (let i = 0; i < mainWindow.gBrowser.tabContainer.childNodes.length; ++i) {
+    Priv8Overlay.tabOpened(mainWindow.gBrowser, mainWindow.gBrowser.tabContainer.childNodes[i]);
   }
 }, false);
 
@@ -213,17 +219,18 @@ const Priv8Overlay = {
 
     function onLoad() {
       debug("Tab loaded: " + browser.currentURI.spec);
-      if (browser.currentURI.spec != 'about:blank') {
+      if (browser.currentURI.spec != 'about:blank' && 'chrome://priv8/content/wait.html') {
         browser.removeEventListener("load", onLoad, true);
+      }
 
-        var docShell = browser.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                                            .getInterface(Components.interfaces.nsIDocShell);
+      var docShell = browser.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                                          .getInterface(Components.interfaces.nsIDocShell);
 
-        var appId = docShell.appId;
-        if (appId != Components.interfaces.nsIScriptSecurityManager.NO_APP_ID &&
-            appId != Components.interfaces.nsIScriptSecurityManager.UNKNOWN_APP_ID) {
-          Priv8Overlay._setColor(aTab, appId);
-        }
+      var appId = docShell.appId;
+      if (appId != Components.interfaces.nsIScriptSecurityManager.NO_APP_ID &&
+          appId != Components.interfaces.nsIScriptSecurityManager.UNKNOWN_APP_ID) {
+        browser.removeEventListener("load", onLoad, true);
+        Priv8Overlay._setColor(aTab, appId);
       }
     }
 
@@ -299,5 +306,10 @@ const Priv8Overlay = {
 
     dump("Error parsing the color\n");
     return 255,0,0;
+  },
+
+  // Menu opened:
+  menuOpen: function() {
+    // nothing yet
   }
 };

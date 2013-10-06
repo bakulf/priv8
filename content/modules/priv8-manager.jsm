@@ -3,6 +3,7 @@
 Components.utils.import("resource://gre/modules/Services.jsm");
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 Components.utils.import("chrome://priv8/content/modules/priv8.jsm");
+Components.utils.import("chrome://priv8/content/modules/priv8-colors.jsm");
 
 function debug(msg) {
   dump("Priv8-manager.jsm - " + msg + "\n");
@@ -171,9 +172,19 @@ Priv8ManagerSettings.prototype = {
     info.appendChild(this._browser.contentDocument.createTextNode(strbundle.getString("Manager.cookieJars.color")));
     li.appendChild(info);
 
-    let colorInput = this._browser.contentDocument.createElement('input');
-    colorInput.setAttribute('type', 'text');
-    colorInput.setAttribute('value', typeof(aJar.color) == "string" ? aJar.color : '');
+    let colorInput = this._browser.contentDocument.createElement('select');
+    for (let color in priv8colors) {
+      let option = this._browser.contentDocument.createElement('option');
+      option.setAttribute('value', color);
+      option.setAttribute('style', 'background-color: ' + color);
+      option.appendChild(this._browser.contentDocument.createTextNode(color));
+      colorInput.appendChild(option);
+
+      if (typeof(aJar.color) == "string" && aJar.color == color) {
+        option.setAttribute('selected', 'selected');
+      }
+    }
+
     li.appendChild(colorInput);
 
     urlInput.addEventListener('change', function() {
@@ -196,6 +207,13 @@ Priv8ManagerSettings.prototype = {
                             strbundle.getString('Manager.cookieJars.createCookieJarTitle'),
                             strbundle.getString('Manager.cookieJars.createCookieJar'),
                             name, null, {value: 0})) {
+      if (name.value.length == 0) {
+        this._prompt.alert(this._window,
+                           strbundle.getString('Manager.cookieJars.errorCreateTitle'),
+                           strbundle.getString('Manager.cookieJars.errorCreateLength'));
+        return;           
+      }
+
       priv8.createCookieJar(name.value);
       this.show();
     }
