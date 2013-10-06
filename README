@@ -1,0 +1,13 @@
+Priv8
+=====
+This is a Firefox addon that uses part of the security model of Firefox OS to creates sandboxes per tabs.
+Each sandbox is completely separated from the rest of firefox: it doesn't share cookies, history, storages, etc.
+Also the addons could have hard time to work in the sandboxes.
+
+Each sandbox has a name and a color so that it's always easy to identify which tab is sandboxed.
+Of course, multiple tabs running in the same sandbox, share cookies, history and so on.
+
+This addon has been written in half day, it's not stable, and it can be dangerous for the integrity of your firefox profile.
+
+Priv8 is released under Mozilla Public License.
+
