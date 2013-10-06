@@ -88,7 +88,10 @@ const priv8 = {
       return;
     }
 
-    var tab = browser.getBrowserForTab(browser.addTab("about:blank"));
+    var tab = browser.addTab("about:blank");
+    browser.selectedTab = tab;
+
+    tab = browser.getBrowserForTab(tab);
     var docShell = tab.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                                     .getInterface(Components.interfaces.nsIDocShell);
     debug("Opening a new tab with the jar");
