@@ -7,7 +7,7 @@ Components.utils.import("chrome://priv8/content/modules/priv8-colors.jsm");
 this.EXPORTED_SYMBOLS = ["priv8"];
 
 function debug(msg) {
-  dump("Priv8.jsm - " + msg + "\n");
+  //dump("Priv8.jsm - " + msg + "\n");
 }
 
 // Priv8 Component
@@ -15,8 +15,7 @@ const priv8 = {
   // ...component implementation...
   _initialized: false,
 
-  _firstRun: true,
-  _cookieJars: {},
+  _sandboxes: {},
 
   init: function() {
     debug("init");
@@ -26,17 +25,11 @@ const priv8 = {
     }
     this._initialized = true;
 
-    // Preferences:
-    this._firstRun = Services.prefs.getBoolPref('extensions.priv8.firstRun');
-    if (this._firstRun == true) {
-      Services.prefs.setBoolPref('extensions.priv8.firstRun', false);
-    }
-
-    let data = Services.prefs.getCharPref('extensions.priv8.cookieJars');
+    let data = Services.prefs.getCharPref('extensions.id@baku.priv8.sandboxes');
     try {
-      this._cookieJars = JSON.parse(data);
+      this._sandboxes = JSON.parse(data);
     } catch(e) {
-      this._cookieJars = {};
+      this._sandboxes = {};
     }
   },
 
@@ -45,33 +38,68 @@ const priv8 = {
     // nothing special
   },
 
-  firstRun: function() {
-    return this._firstRun;
+  appIdForSandbox: function(aSandbox) {
+    for (let i in this._sandboxes) {
+      if (this._sandboxes[i].name == aSandbox) {
+        return i;
+      }
+    }
+
+    return Components.interfaces.nsIScriptSecurityManager.NO_APP_ID;
   },
 
-  getCookieJars: function() {
-    debug("getCookieJars");
-    return this._cookieJars;
+  colorForSandbox: function(aSandbox) {
+    for (let i in this._sandboxes) {
+      if (this._sandboxes[i].name == aSandbox) {
+        return this._sandboxes[i].color;
+      }
+    }
+
+    return "";
   },
 
-  createCookieJar: function(aName) {
-    debug("Create cookie jar: " + aName);
-    let id = this._newCookieJarId();
-    this._cookieJars[id] = { name: aName,
-                             url: "",
-                             color: this._randomColor(),
-                             id: id };
+  getSandboxes: function() {
+    debug("getSandboxes");
+    return this._sandboxes;
+  },
+
+  getSandboxNames: function() {
+    debug("getSandboxNames");
+    let names = [];
+    for (let i in this._sandboxes) {
+      names.push(this._sandboxes[i].name);
+    }
+    return names;
+  },
+
+  createSandbox: function(aName) {
+    debug("Create sandbox: " + aName);
+    let id = this._newSandboxId();
+    this._sandboxes[id] = { name: aName,
+                            url: "",
+                            color: this._randomColor(),
+                            id: id };
     this._save();
   },
 
-  openCookieJar: function(aWindow, aJarId) {
-    debug("Open cookie jar: " + aJarId);
+  openSandboxByName: function(aWindow, aName) {
+    debug("Open sandboxByName: " + aName);
+    for (let i in this._sandboxes) {
+      if (this._sandboxes[i].name == aName) {
+        this.openSandbox(aWindow, i);
+        return;
+      }
+    }
+  },
 
-    if (!(aJarId in this._cookieJars)) {
+  openSandbox: function(aWindow, aId) {
+    debug("Open sandbox: " + aId);
+
+    if (!(aId in this._sandboxes)) {
       return;
     }
 
-    var mainWindow = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+    let mainWindow = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                             .getInterface(Components.interfaces.nsIWebNavigation)
                             .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
                             .rootTreeItem
@@ -82,20 +110,21 @@ const priv8 = {
       return;
     }
 
-    var browser = mainWindow.gBrowser;
+    let browser = mainWindow.gBrowser;
     if (!browser) {
       dump("Error getting the browser\n");
       return;
     }
 
-    var tab = browser.addTab("about:blank");
-    // TODO: browser.selectedTab = tab;
+    let tab = browser.addTab("about:blank");
+    tab.style.color = this._sandboxes[aId].color;
+    browser.selectedTab = tab;
 
     tab = browser.getBrowserForTab(tab);
-    var docShell = tab.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+    let docShell = tab.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
                                     .getInterface(Components.interfaces.nsIDocShell);
-    debug("Opening a new tab with the jar");
-    docShell.setIsApp(aJarId);
+    debug("Opening a new tab with the sandbox");
+    docShell.setIsApp(aId);
 
     let self = this;
     function onLoad() {
@@ -109,7 +138,7 @@ const priv8 = {
       // Here we are running with the right appId.
       tab.removeEventListener("load", onLoad, true);
 
-      var url = self._cookieJars[aJarId].url;
+      let url = self._sandboxes[aId].url;
       if (typeof(url) != "string" || url.length == 0) {
         url = "chrome://priv8/content/readme.html";
       }
@@ -121,22 +150,22 @@ const priv8 = {
     tab.addEventListener("load", onLoad, true);
   },
 
-  renameCookieJar: function(aJarId, aName) {
-    debug("Cookie Jar renamed: " + aName);
-    if (aJarId in this._cookieJars) {
-      this._cookieJars[aJarId].name = aName;
+  renameSandbox: function(aId, aName) {
+    debug("Sandbox renamed: " + aName);
+    if (aId in this._sandboxes) {
+      this._sandboxes[aId].name = aName;
       this._save();
     }
   },
 
-  deleteCookieJar: function(aJarId) {
-    debug("Cookie Jar deleted: " + aJarId);
-    if (!(aJarId in this._cookieJars)) {
+  deleteSandbox: function(aId) {
+    debug("Sandbox deleted: " + aId);
+    if (!(aId in this._sandboxes)) {
       return;
     }
 
     let subject = {
-      appId: aJarId,
+      appId: aId,
       browserOnly: false,
       QueryInterface: XPCOMUtils.generateQI([Components.interfaces.mozIApplicationClearPrivateDataParams])
     };
@@ -189,18 +218,18 @@ const priv8 = {
     });
 
     // Real operation
-    delete this._cookieJars[aJarId];
+    delete this._sandboxes[aId];
     this._save();
 
     debug("Notification sent!");
   },
 
-  updateCookieJar: function(aJarId, aURL, aColor) {
-    debug("URL update for Jar: " + aJarId);
+  updateSandbox: function(aId, aURL, aColor) {
+    debug("URL update for sandbox: " + aId);
 
-    if (aJarId in this._cookieJars) {
-      this._cookieJars[aJarId].url = aURL;
-      this._cookieJars[aJarId].color = aColor;
+    if (aId in this._sandboxes) {
+      this._sandboxes[aId].url = aURL;
+      this._sandboxes[aId].color = aColor;
       this._save();
     }
   },
@@ -214,17 +243,18 @@ const priv8 = {
     return colors[Math.floor(Math.random() * colors.length)];
   },
 
-  _newCookieJarId: function() {
-    let id = Services.prefs.getIntPref("extensions.priv8.maxLocalId") + 1;
-    Services.prefs.setIntPref("extensions.priv8.maxLocalId", id);
+  _newSandboxId: function() {
+    let id = Services.prefs.getIntPref("extensions.id@baku.priv8.maxLocalId") + 1;
+    Services.prefs.setIntPref("extensions.id@baku.priv8.maxLocalId", id);
     Services.prefs.savePrefFile(null);
     return id;
   },
 
   _save: function() {
-    Services.prefs.setCharPref('extensions.priv8.cookieJars',
-                               JSON.stringify(this._cookieJars));
+    Services.prefs.setCharPref('extensions.id@baku.priv8.sandboxes',
+                               JSON.stringify(this._sandboxes));
     Services.prefs.savePrefFile(null);
+    Services.obs.notifyObservers(null, "priv8-refresh-needed", null);
     debug("saved!");
   }
 };

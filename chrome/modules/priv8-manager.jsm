@@ -6,7 +6,7 @@ Components.utils.import("chrome://priv8/content/modules/priv8.jsm");
 Components.utils.import("chrome://priv8/content/modules/priv8-colors.jsm");
 
 function debug(msg) {
-  dump("Priv8-manager.jsm - " + msg + "\n");
+  //dump("Priv8-manager.jsm - " + msg + "\n");
 }
 
 this.EXPORTED_SYMBOLS = ["Priv8ManagerData"];
@@ -92,37 +92,37 @@ Priv8ManagerSettings.prototype = {
 
     let self = this;
     this._browser.contentDocument.getElementById('create').addEventListener('click', function() {
-      self.createCookieJar();
+      self.createSandbox();
     }, false);
 
-    let dom = this._browser.contentDocument.getElementById('cookieJars-list');
+    let dom = this._browser.contentDocument.getElementById('sandboxes-list');
     dom.innerHTML = ''; // Fastest way to remove all the content
 
-    let jars = priv8.getCookieJars();
-    for (let i in jars) {
-      this.createElementCookieJar(dom, jars[i]);
+    let sandboxes = priv8.getSandboxes();
+    for (let i in sandboxes) {
+      this.createElementSandbox(dom, sandboxes[i]);
     }
   },
 
-  createElementCookieJar: function(aDom, aJar) {
+  createElementSandbox: function(aDom, aSandbox) {
     let self = this;
 
     let strbundle = this._document.getElementById("priv8strings");
 
     // Title:
     let title = this._browser.contentDocument.createElement('h2');
-    title.appendChild(this._browser.contentDocument.createTextNode(aJar.name));
+    title.appendChild(this._browser.contentDocument.createTextNode(aSandbox.name));
     aDom.appendChild(title);
 
     {
       let button = this._browser.contentDocument.createElement('input');
       button.setAttribute('class', 'right');
       button.setAttribute('type', 'button');
-      button.setAttribute('value', strbundle.getString("Manager.cookieJars.delete"));
+      button.setAttribute('value', strbundle.getString("Manager.sandboxes.delete"));
       title.appendChild(button);
 
       button.addEventListener('click', function() {
-        self.deleteCookieJar(aJar);
+        self.deleteSandbox(aSandbox);
       }, false);
     }
 
@@ -130,11 +130,11 @@ Priv8ManagerSettings.prototype = {
       let button = this._browser.contentDocument.createElement('input');
       button.setAttribute('class', 'right');
       button.setAttribute('type', 'button');
-      button.setAttribute('value', strbundle.getString("Manager.cookieJars.rename"));
+      button.setAttribute('value', strbundle.getString("Manager.sandboxes.rename"));
       title.appendChild(button);
 
       button.addEventListener('click', function() {
-        self.renameCookieJar(aJar);
+        self.renameSandbox(aSandbox);
       }, false);
     }
 
@@ -142,11 +142,11 @@ Priv8ManagerSettings.prototype = {
       let button = this._browser.contentDocument.createElement('input');
       button.setAttribute('class', 'right');
       button.setAttribute('type', 'button');
-      button.setAttribute('value', strbundle.getString("Manager.cookieJars.open"));
+      button.setAttribute('value', strbundle.getString("Manager.sandboxes.open"));
       title.appendChild(button);
 
       button.addEventListener('click', function() {
-        self.openCookieJar(aJar);
+        self.openSandbox(aSandbox);
       }, false);
     }
 
@@ -159,17 +159,17 @@ Priv8ManagerSettings.prototype = {
 
     let info;
     info = this._browser.contentDocument.createElement('strong');
-    info.appendChild(this._browser.contentDocument.createTextNode(strbundle.getString("Manager.cookieJars.url")));
+    info.appendChild(this._browser.contentDocument.createTextNode(strbundle.getString("Manager.sandboxes.url")));
     li.appendChild(info);
 
     let urlInput = this._browser.contentDocument.createElement('input');
     urlInput.setAttribute('type', 'text');
-    urlInput.setAttribute('value', typeof(aJar.url) == "string" ? aJar.url : '');
+    urlInput.setAttribute('value', typeof(aSandbox.url) == "string" ? aSandbox.url : '');
     li.appendChild(urlInput);
 
     // Color
     info = this._browser.contentDocument.createElement('strong');
-    info.appendChild(this._browser.contentDocument.createTextNode(strbundle.getString("Manager.cookieJars.color")));
+    info.appendChild(this._browser.contentDocument.createTextNode(strbundle.getString("Manager.sandboxes.color")));
     li.appendChild(info);
 
     let colorInput = this._browser.contentDocument.createElement('select');
@@ -180,7 +180,7 @@ Priv8ManagerSettings.prototype = {
       option.appendChild(this._browser.contentDocument.createTextNode(color));
       colorInput.appendChild(option);
 
-      if (typeof(aJar.color) == "string" && aJar.color == color) {
+      if (typeof(aSandbox.color) == "string" && aSandbox.color == color) {
         option.setAttribute('selected', 'selected');
       }
     }
@@ -188,15 +188,15 @@ Priv8ManagerSettings.prototype = {
     li.appendChild(colorInput);
 
     urlInput.addEventListener('change', function() {
-      priv8.updateCookieJar(aJar.id, urlInput.value, colorInput.value);
+      priv8.updateSandbox(aSandbox.id, urlInput.value, colorInput.value);
     }, false);
 
     colorInput.addEventListener('change', function() {
-      priv8.updateCookieJar(aJar.id, urlInput.value, colorInput.value);
+      priv8.updateSandbox(aSandbox.id, urlInput.value, colorInput.value);
     }, false);
   },
 
-  createCookieJar: function() {
+  createSandbox: function() {
     this.needPrompt();
 
     let strbundle = this._document.getElementById("priv8strings");
@@ -204,48 +204,48 @@ Priv8ManagerSettings.prototype = {
     let name = {value: ''};
 
     if (this._prompt.prompt(this._window,
-                            strbundle.getString('Manager.cookieJars.createCookieJarTitle'),
-                            strbundle.getString('Manager.cookieJars.createCookieJar'),
+                            strbundle.getString('Manager.sandboxes.createSandboxTitle'),
+                            strbundle.getString('Manager.sandboxes.createSandbox'),
                             name, null, {value: 0})) {
       if (name.value.length == 0) {
         this._prompt.alert(this._window,
-                           strbundle.getString('Manager.cookieJars.errorCreateTitle'),
-                           strbundle.getString('Manager.cookieJars.errorCreateLength'));
+                           strbundle.getString('Manager.sandboxes.errorCreateTitle'),
+                           strbundle.getString('Manager.sandboxes.errorCreateLength'));
         return;           
       }
 
-      priv8.createCookieJar(name.value);
+      priv8.createSandbox(name.value);
       this.show();
     }
   },
 
-  openCookieJar: function(aJar) {
-    priv8.openCookieJar(this._window, aJar.id);
+  openSandbox: function(aSandbox) {
+    priv8.openSandbox(this._window, aSandbox.id);
   },
 
-  renameCookieJar: function(aJar) {
+  renameSandbox: function(aSandbox) {
     this.needPrompt();
 
     let strbundle = this._document.getElementById("priv8strings");
 
-    let newName = {value: aJar.name};
+    let newName = {value: aSandbox.name};
 
     if (this._prompt.prompt(this._window,
-                            strbundle.getString('Manager.cookieJars.renameCookieJarTitle'),
-                            strbundle.getFormattedString('Manager.cookieJars.renameCookieJar', [aJar.name]),
+                            strbundle.getString('Manager.sandboxes.renameSandboxTitle'),
+                            strbundle.getFormattedString('Manager.sandboxes.renameSandbox', [aSandbox.name]),
                             newName, null, {value:0})) {
       newName = newName.value;
 
-      if (newName == aJar.name) {
+      if (newName == aSandbox.name) {
         return false;
       }
 
-      priv8.renameCookieJar(aJar.id, newName);
+      priv8.renameSandbox(aSandbox.id, newName);
       this.show();
     }
   },
 
-  deleteCookieJar: function(aJar) {
+  deleteSandbox: function(aSandbox) {
     let deleteFiles = false;
 
     let strbundle = this._document.getElementById("priv8strings");
@@ -254,12 +254,12 @@ Priv8ManagerSettings.prototype = {
     this.needPrompt();
 
     if (!this._prompt.confirm(this._window,
-                              strbundle.getString('Manager.cookieJars.deleteCookieJarTitle'),
-                              strbundle.getString('Manager.cookieJars.deleteCookieJarConfirm'))) {
+                              strbundle.getString('Manager.sandboxes.deleteSandboxTitle'),
+                              strbundle.getString('Manager.sandboxes.deleteSandboxConfirm'))) {
       return;
     }
 
-    priv8.deleteCookieJar(aJar.id);
+    priv8.deleteSandbox(aSandbox.id);
     this.show();
   },
 

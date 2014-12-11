@@ -1,0 +1,98 @@
+body {
+  font-family: "FiraSans", Helvetica, sans-serif;
+  margin: 0px;
+}
+
+.wrapper {
+  width:320px;
+  height: 110px;
+  overflow-y:auto;
+  background: #fff;
+}
+
+.wrapper h1 {
+  font-size: 16px;
+  font-weight: normal;
+  margin:5px 10px;
+}
+
+.wrapper h1 em {
+  font-weight: bold;
+  color: #DD0000;
+}
+
+.wrapper hr {
+  border: none;
+  height: 1px;
+  background: #DD0000;
+}
+
+.item {
+  margin:10px; 
+}
+
+
+select,
+label {
+  height: 34px;
+  line-height: 34px;
+  font-size: 14px;
+
+}
+
+
+select option {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+select {
+  font-family: "FiraSans", Helvetica, sans-serif;
+  font-style: italic;
+  padding:5px 20px;
+  font-size: 14px;
+  height: 34px;
+  width:100%;
+  line-height: 34px;
+  border:1px solid #ccc;
+  -moz-appearance: none;
+  text-indent: 0.01px;
+  text-overflow: '';
+  cursor: pointer;
+  transition: all 0.3s ease-in-out 0s;
+}
+
+select:hover {
+  background: #eee;
+}
+
+.commands {
+  font-size: 16px;
+  line-height: 24px;
+  margin-top:10px;
+}
+
+.commands i {
+  display: inline-block;
+  margin-right:5px;
+  line-height: 24px;
+}
+
+.commands button {
+  font-size: 14px;
+  border:0;
+  background: #fff;
+  font-family: "FiraSans", Helvetica, sans-serif;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out 0s;
+  cursor:pointer;
+}
+
+.commands button:hover {
+  background: #EEE;
+}
+
+.commands button.about {
+  float: right;
+}

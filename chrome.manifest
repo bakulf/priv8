@@ -1,13 +1,3 @@
-content	priv8	content/
-skin	priv8	classic/1.0	skin/
-
-overlay	chrome://browser/content/browser.xul		chrome://priv8/content/main.xul application={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
-overlay	chrome://global/content/customizeToolbar.xul	chrome://priv8/content/main.xul application={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
-
-style chrome://global/content/customizeToolbar.xul      chrome://priv8/skin/main.css
-
-locale    priv8  en-US         locale/en-US/
-
-component {1ad9de19-4d0c-4b40-9ddb-e91fdeacdd06} components/priv8.js
-contract @baku.priv8/priv8Startup;1 {1ad9de19-4d0c-4b40-9ddb-e91fdeacdd06}
-category profile-after-change @baku.priv8/priv8Startup;1 @baku.priv8/priv8Startup;1
+content	priv8	chrome/
+skin	priv8	classic/1.0	chrome/skin/
+locale    priv8  en-US         chrome/locale/en-US/

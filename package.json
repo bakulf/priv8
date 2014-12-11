@@ -1,0 +1,22 @@
+{
+  "name": "priv8",
+  "title": "Priv8",
+  "id": "id@baku.priv8",
+  "description": "Run a website into a persistent sandbox",
+  "author": "Andrea Marchesini",
+  "license": "MPL 2.0",
+  "version": "0.0.2",
+  "preferences": [{
+    "name": "sandboxes",
+    "title": "List of sandboxes",
+    "description": "List of sandboxes",
+    "type": "string",
+    "value": "{}"
+  },{
+    "name": "maxLocalId",
+    "title": "The incremental appId",
+    "description": "The incremental appId",
+    "type": "integer",
+    "value": 1000
+  }]
+}
