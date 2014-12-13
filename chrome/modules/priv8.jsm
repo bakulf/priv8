@@ -82,17 +82,17 @@ const priv8 = {
     this._save();
   },
 
-  openSandboxByName: function(aWindow, aName) {
+  openSandboxByName: function(aWindow, aName, aURL) {
     debug("Open sandboxByName: " + aName);
     for (let i in this._sandboxes) {
       if (this._sandboxes[i].name == aName) {
-        this.openSandbox(aWindow, i);
+        this.openSandbox(aWindow, i, aURL);
         return;
       }
     }
   },
 
-  openSandbox: function(aWindow, aId) {
+  openSandbox: function(aWindow, aId, aURL) {
     debug("Open sandbox: " + aId);
 
     if (!(aId in this._sandboxes)) {
@@ -138,7 +138,11 @@ const priv8 = {
       // Here we are running with the right appId.
       tab.removeEventListener("load", onLoad, true);
 
-      let url = self._sandboxes[aId].url;
+      let url = aURL;
+      if (!url) {
+        url = self._sandboxes[aId].url;
+      }
+
       if (typeof(url) != "string" || url.length == 0) {
         url = "chrome://priv8/content/readme.html";
       }
