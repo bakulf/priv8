@@ -13,8 +13,6 @@ function debug(msg) {
 // Priv8 Component
 const priv8 = {
   // ...component implementation...
-  _initialized: false,
-
   _sandboxes: {},
 
   _waitURL: null,
@@ -22,11 +20,6 @@ const priv8 = {
 
   init: function(aWaitURL, aReadmeURL) {
     debug("init");
-
-    if (this._initialized) {
-      return;
-    }
-    this._initialized = true;
 
     this._waitURL = aWaitURL;
     this._readmeURL = aReadmeURL;
