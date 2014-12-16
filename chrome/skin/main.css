@@ -1,7 +1,0 @@
-#priv8-toolbarbutton {
-  list-style-image: url("chrome://priv8/skin/icon_big.png");
-}
-
-toolbar[iconsize="small"] #priv8-toolbarbutton {
-  list-style-image: url("chrome://priv8/skin/icon_small.png");
-}

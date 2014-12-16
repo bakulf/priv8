@@ -17,13 +17,19 @@ const priv8 = {
 
   _sandboxes: {},
 
-  init: function() {
+  _waitURL: null,
+  _readmeURL: null,
+
+  init: function(aWaitURL, aReadmeURL) {
     debug("init");
 
     if (this._initialized) {
       return;
     }
     this._initialized = true;
+
+    this._waitURL = aWaitURL;
+    this._readmeURL = aReadmeURL;
 
     let data = Services.prefs.getCharPref('extensions.id@baku.priv8.sandboxes');
     try {
@@ -46,16 +52,6 @@ const priv8 = {
     }
 
     return Components.interfaces.nsIScriptSecurityManager.NO_APP_ID;
-  },
-
-  colorForSandbox: function(aSandbox) {
-    for (let i in this._sandboxes) {
-      if (this._sandboxes[i].name == aSandbox) {
-        return this._sandboxes[i].color;
-      }
-    }
-
-    return "";
   },
 
   getSandboxes: function() {
@@ -121,17 +117,16 @@ const priv8 = {
     browser.selectedTab = tab;
 
     tab = browser.getBrowserForTab(tab);
-    let docShell = tab.contentWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                                    .getInterface(Components.interfaces.nsIDocShell);
+
     debug("Opening a new tab with the sandbox");
-    docShell.setIsApp(aId);
+    this.configureWindow(tab, tab.contentWindow, aId);
 
     let self = this;
     function onLoad() {
       debug("Tab loaded!");
       // First loading opens the waiting page - we are still with the old appId
       if (tab.currentURI.spec == 'about:blank') {
-        tab.loadURI('chrome://priv8/content/wait.html');
+        tab.loadURI(self._waitURL);
         return;
       }
 
@@ -144,7 +139,7 @@ const priv8 = {
       }
 
       if (typeof(url) != "string" || url.length == 0) {
-        url = "chrome://priv8/content/readme.html";
+        url = self._readmeURL;
       }
 
       debug("Opening: " + url);
@@ -236,6 +231,23 @@ const priv8 = {
       this._sandboxes[aId].color = aColor;
       this._save();
     }
+  },
+
+  configureWindowByName: function(aTab, aWindow, aSandbox) {
+    return this.configureWindow(aTab, aWindow, this.appIdForSandbox(aSandbox));
+  },
+
+  configureWindow: function(aTab, aWindow, aId) {
+    let docShell = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
+                          .getInterface(Components.interfaces.nsIDocShell);
+    if (docShell.appId == aId) {
+      return false;
+    }
+
+    docShell.setIsApp(aId);
+    aTab.style.color = (aId == Components.interfaces.nsIScriptSecurityManager.NO_APP_ID
+                         ? "" : this._sandboxes[aId].color);
+    return true;
   },
 
   _randomColor: function() {
