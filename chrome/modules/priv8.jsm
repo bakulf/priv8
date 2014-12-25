@@ -1,8 +1,10 @@
 /* See license.txt for terms of usage */
 
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("chrome://priv8/content/modules/priv8-colors.jsm");
+const {classes: Cc, interfaces: Ci, utils: Cu, results: Cr} = Components;
+
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("chrome://priv8/content/modules/priv8-colors.jsm");
 
 this.EXPORTED_SYMBOLS = ["priv8"];
 
@@ -17,6 +19,7 @@ const priv8 = {
 
   _waitURL: null,
   _readmeURL: null,
+  _defaultBrowserStyle: null,
 
   init: function(aWaitURL, aReadmeURL) {
     debug("init");
@@ -44,7 +47,7 @@ const priv8 = {
       }
     }
 
-    return Components.interfaces.nsIScriptSecurityManager.NO_APP_ID;
+    return Ci.nsIScriptSecurityManager.NO_APP_ID;
   },
 
   getSandboxes: function() {
@@ -88,12 +91,12 @@ const priv8 = {
       return;
     }
 
-    let mainWindow = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                            .getInterface(Components.interfaces.nsIWebNavigation)
-                            .QueryInterface(Components.interfaces.nsIDocShellTreeItem)
+    let mainWindow = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+                            .getInterface(Ci.nsIWebNavigation)
+                            .QueryInterface(Ci.nsIDocShellTreeItem)
                             .rootTreeItem
-                            .QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                            .getInterface(Components.interfaces.nsIDOMWindow);
+                            .QueryInterface(Ci.nsIInterfaceRequestor)
+                            .getInterface(Ci.nsIDOMWindow);
     if (!mainWindow) {
       dump("Error getting the mainWindow\n");
       return;
@@ -137,6 +140,8 @@ const priv8 = {
 
       debug("Opening: " + url);
       tab.loadURI(url);
+
+      self.highlightBrowser(browser);
     }
 
     tab.addEventListener("load", onLoad, true);
@@ -159,20 +164,19 @@ const priv8 = {
     let subject = {
       appId: aId,
       browserOnly: false,
-      QueryInterface: XPCOMUtils.generateQI([Components.interfaces.mozIApplicationClearPrivateDataParams])
+      QueryInterface: XPCOMUtils.generateQI([Ci.mozIApplicationClearPrivateDataParams])
     };
 
     const serviceMarker = "service,";
 
     // First create observers from the category manager.
-    let cm = Components.classes["@mozilla.org/categorymanager;1"]
-                       .getService(Components.interfaces.nsICategoryManager);
+    let cm = Cc["@mozilla.org/categorymanager;1"].getService(Ci.nsICategoryManager);
     let enumerator = cm.enumerateCategory("webapps-clear-data");
 
     let observers = [];
 
     while (enumerator.hasMoreElements()) {
-      let entry = enumerator.getNext().QueryInterface(Components.interfaces.nsISupportsCString).data;
+      let entry = enumerator.getNext().QueryInterface(Ci.nsISupportsCString).data;
       let contractID = cm.getCategoryEntry("webapps-clear-data", entry);
 
       let factoryFunction;
@@ -184,9 +188,9 @@ const priv8 = {
       }
 
       try {
-        let handler = Components.classes[contractID][factoryFunction]();
+        let handler = Cc[contractID][factoryFunction]();
         if (handler) {
-          let observer = handler.QueryInterface(Components.interfaces.nsIObserver);
+          let observer = handler.QueryInterface(Ci.nsIObserver);
           observers.push(observer);
         }
       } catch(e) { }
@@ -196,7 +200,7 @@ const priv8 = {
     enumerator = Services.obs.enumerateObservers("webapps-clear-data");
     while (enumerator.hasMoreElements()) {
       try {
-        let observer = enumerator.getNext().QueryInterface(Components.interfaces.nsIObserver);
+        let observer = enumerator.getNext().QueryInterface(Ci.nsIObserver);
         if (observers.indexOf(observer) == -1) {
           observers.push(observer);
         }
@@ -231,14 +235,14 @@ const priv8 = {
   },
 
   configureWindow: function(aTab, aWindow, aId) {
-    let docShell = aWindow.QueryInterface(Components.interfaces.nsIInterfaceRequestor)
-                          .getInterface(Components.interfaces.nsIDocShell);
+    let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+                          .getInterface(Ci.nsIDocShell);
     if (docShell.appId == aId) {
       return false;
     }
 
     docShell.setIsApp(aId);
-    aTab.style.color = (aId == Components.interfaces.nsIScriptSecurityManager.NO_APP_ID
+    aTab.style.color = (aId == Ci.nsIScriptSecurityManager.NO_APP_ID
                          ? "" : this._sandboxes[aId].color);
     return true;
   },
@@ -265,5 +269,29 @@ const priv8 = {
     Services.prefs.savePrefFile(null);
     Services.obs.notifyObservers(null, "priv8-refresh-needed", null);
     debug("saved!");
+  },
+
+  highlightBrowser: function(aBrowser) {
+    if (this._defaultBrowserStyle === null) {
+      this._defaultBrowserStyle = aBrowser.style.border;
+    }
+
+    let docShell = aBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+                                         .getInterface(Ci.nsIDocShell);
+    if (docShell.appId == Ci.nsIScriptSecurityManager.NO_APP_ID) {
+      debug("Setting default color.");
+      aBrowser.style.border = this._defaultBrowserStyle;
+      return;
+    }
+
+    let appId = docShell.appId;
+    if (!(appId in this._sandboxes)) {
+      debug("Setting default color.");
+      aBrowser.style.border = this._defaultBrowserStyle;
+      return;
+    }
+
+    debug("Setting sandbox color.");
+    aBrowser.style.border = "2px solid " + this._sandboxes[appId].color;
   }
 };
