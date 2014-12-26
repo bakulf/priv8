@@ -21,6 +21,8 @@ const priv8 = {
   _readmeURL: null,
   _defaultBrowserStyle: null,
 
+  _sessionStore: null,
+
   init: function(aWaitURL, aReadmeURL) {
     debug("init");
 
@@ -33,6 +35,9 @@ const priv8 = {
     } catch(e) {
       this._sandboxes = {};
     }
+
+    this._sessionStore = Cc["@mozilla.org/browser/sessionstore;1"].
+                           getService(Ci.nsISessionStore);
   },
 
   shutdown: function() {
@@ -112,22 +117,22 @@ const priv8 = {
     tab.style.color = this._sandboxes[aId].color;
     browser.selectedTab = tab;
 
-    tab = browser.getBrowserForTab(tab);
+    browser = browser.getBrowserForTab(tab);
 
     debug("Opening a new tab with the sandbox");
-    this.configureWindow(tab, tab.contentWindow, aId);
+    this.configureWindow(tab, browser.contentWindow, aId);
 
     let self = this;
     function onLoad() {
       debug("Tab loaded!");
       // First loading opens the waiting page - we are still with the old appId
-      if (tab.currentURI.spec == 'about:blank') {
-        tab.loadURI(self._waitURL);
+      if (browser.currentURI.spec == 'about:blank') {
+        browser.loadURI(self._waitURL);
         return;
       }
 
       // Here we are running with the right appId.
-      tab.removeEventListener("load", onLoad, true);
+      browser.removeEventListener("load", onLoad, true);
 
       let url = aURL;
       if (!url) {
@@ -139,12 +144,12 @@ const priv8 = {
       }
 
       debug("Opening: " + url);
-      tab.loadURI(url);
+      browser.loadURI(url);
 
       self.highlightBrowser(browser);
     }
 
-    tab.addEventListener("load", onLoad, true);
+    browser.addEventListener("load", onLoad, true);
   },
 
   renameSandbox: function(aId, aName) {
@@ -235,6 +240,9 @@ const priv8 = {
   },
 
   configureWindow: function(aTab, aWindow, aId) {
+    this._sessionStore.setTabValue(aTab, this.TAB_DATA_IDENTIFIER,
+                                   JSON.stringify({ appId: aId }));
+
     let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                           .getInterface(Ci.nsIDocShell);
     if (docShell.appId == aId) {
@@ -272,7 +280,10 @@ const priv8 = {
   },
 
   highlightBrowser: function(aBrowser) {
+    dump("highlightBrowser");
+
     if (this._defaultBrowserStyle === null) {
+      dump("First time, let's store the default style.");
       this._defaultBrowserStyle = aBrowser.style.border;
     }
 
@@ -292,6 +303,28 @@ const priv8 = {
     }
 
     debug("Setting sandbox color.");
-    aBrowser.style.border = "2px solid " + this._sandboxes[appId].color;
+    aBrowser.style.border = "3px solid " + this._sandboxes[appId].color;
+  },
+
+  tabRestoring: function(aEvent) {
+    debug("tabRestoring");
+    let tab = aEvent.originalTarget;
+    this.restoreTab(tab);
+  },
+
+  restoreTab: function(aTab) {
+    debug("restoreTab");
+    let data = this._sessionStore.getTabValue(aTab, this.TAB_DATA_IDENTIFIER);
+
+    try {
+      data = JSON.parse(data);
+    } catch(e) {
+      return;
+    }
+
+    let window = aTab.ownerDocument.defaultView;
+    let innerTab = window.gBrowser.getBrowserForTab(aTab);
+    this.configureWindow(aTab, innerTab.contentWindow, data.appId);
+    this.highlightBrowser(window.gBrowser);
   }
 };
