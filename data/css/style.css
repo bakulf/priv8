@@ -5,7 +5,7 @@ body {
 
 .wrapper {
   width:320px;
-  height: 110px;
+  height: 180px;
   overflow-y:auto;
   background: #fff;
 }
@@ -19,6 +19,7 @@ body {
 .wrapper h1 em {
   font-weight: bold;
   color: #DD0000;
+  overflow: hidden;
 }
 
 .wrapper hr {
@@ -29,6 +30,15 @@ body {
 
 .item {
   margin:10px; 
+}
+
+.item label {
+  font-size: 14px;
+  border:0;
+  background: #fff;
+  font-family: "FiraSans", Helvetica, sans-serif;
+  font-weight: bold;
+  transition: all 0.3s ease-in-out 0s;
 }
 
 

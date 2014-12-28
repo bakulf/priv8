@@ -60,6 +60,14 @@ const priv8 = {
     return this._sandboxes;
   },
 
+  getSandboxName: function(aId) {
+    if (aId in this._sandboxes) {
+      return this._sandboxes[aId].name;
+    }
+
+    return null;
+  },
+
   getSandboxNames: function() {
     debug("getSandboxNames");
     let names = [];

@@ -24,4 +24,8 @@ self.port.on("show", function(data) {
     }
     selectElm.appendChild(opt);
   }
+
+  let current = document.getElementById("priv8-current-sandbox");
+  current.innerHTML = data.currentSandboxName === null ?
+                        "" : data.currentSandboxName;
 });
