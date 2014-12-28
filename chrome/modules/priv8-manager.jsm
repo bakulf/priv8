@@ -165,9 +165,13 @@ Priv8ManagerSettings.prototype = {
     let urlInput = this._browser.contentDocument.createElement('input');
     urlInput.setAttribute('type', 'text');
     urlInput.setAttribute('value', typeof(aSandbox.url) == "string" ? aSandbox.url : '');
+    urlInput.setAttribute('placeholder', strbundle.getString("Manager.sandboxes.urlDescription"));
     li.appendChild(urlInput);
 
     // Color
+    li = this._browser.contentDocument.createElement('li');
+    obj.appendChild(li);
+
     info = this._browser.contentDocument.createElement('strong');
     info.appendChild(this._browser.contentDocument.createTextNode(strbundle.getString("Manager.sandboxes.color")));
     li.appendChild(info);
@@ -214,7 +218,12 @@ Priv8ManagerSettings.prototype = {
         return;           
       }
 
-      priv8.createSandbox(name.value);
+      if (!priv8.createSandbox(name.value)) {
+        this._prompt.alert(this._window,
+                           strbundle.getString('Manager.sandboxes.errorCreateTitle'),
+                           strbundle.getString('Manager.sandboxes.errorCreateDup'));
+      }
+
       this.show();
     }
   },

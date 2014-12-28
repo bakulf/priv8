@@ -71,12 +71,20 @@ const priv8 = {
 
   createSandbox: function(aName) {
     debug("Create sandbox: " + aName);
+
+    for (let i in this._sandboxes) {
+      if (this._sandboxes[i].name == aName) {
+        return false;
+      }
+    }
+
     let id = this._newSandboxId();
     this._sandboxes[id] = { name: aName,
                             url: "",
                             color: this._randomColor(),
                             id: id };
     this._save();
+    return true;
   },
 
   openSandboxByName: function(aWindow, aName, aURL) {
@@ -280,10 +288,10 @@ const priv8 = {
   },
 
   highlightBrowser: function(aBrowser) {
-    dump("highlightBrowser");
+    debug("highlightBrowser");
 
     if (this._defaultBrowserStyle === null) {
-      dump("First time, let's store the default style.");
+      debug("First time, let's store the default style.");
       this._defaultBrowserStyle = aBrowser.style.border;
     }
 
