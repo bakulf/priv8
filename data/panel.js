@@ -26,6 +26,6 @@ self.port.on("show", function(data) {
   }
 
   let current = document.getElementById("priv8-current-sandbox");
-  current.innerHTML = data.currentSandboxName === null ?
-                        "" : data.currentSandboxName;
+  current.textContent = data.currentSandboxName === null ?
+                          "" : data.currentSandboxName;
 });
