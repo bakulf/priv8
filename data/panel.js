@@ -13,7 +13,9 @@ function createButton(name) {
 }
 
 self.port.on("show", function(data) {
-  selectElm.innerHTML = '';
+  while (selectElm.hasChildNodes()) {
+    selectElm.removeChild(selectElm.lastChild);
+  }
 
   for (let i = 0; i < data.sandboxNames.length; ++i) {
     let opt = document.createElement('option');

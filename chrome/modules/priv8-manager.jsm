@@ -15,7 +15,7 @@ this.EXPORTED_SYMBOLS = ["Priv8ManagerData"];
 function priv8Translate(aStrbundle, aBrowser) {
   let list = aBrowser.contentDocument.getElementsByClassName('trans');
   for (let i = 0; i < list.length; ++i) {
-     list[i].innerHTML = aStrbundle.getString(list[i].innerHTML);
+     list[i].textContent = aStrbundle.getString(list[i].textContent);
   }
 
   list = aBrowser.contentDocument.getElementsByClassName('transattr');
@@ -96,7 +96,9 @@ Priv8ManagerSettings.prototype = {
     }, false);
 
     let dom = this._browser.contentDocument.getElementById('sandboxes-list');
-    dom.innerHTML = ''; // Fastest way to remove all the content
+    while (dom.hasChildNodes()) {
+      dom.removeChild(dom.lastChild);
+    }
 
     let sandboxes = priv8.getSandboxes();
     for (let i in sandboxes) {
