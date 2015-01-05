@@ -20,6 +20,7 @@ const priv8 = {
   _waitURL: null,
   _readmeURL: null,
   _defaultBrowserStyle: null,
+  _defaultTabStyle: null,
 
   _sessionStore: null,
 
@@ -130,7 +131,6 @@ const priv8 = {
     }
 
     let tab = browser.addTab("about:blank");
-    tab.style.color = this._sandboxes[aId].color;
     browser.selectedTab = tab;
 
     browser = browser.getBrowserForTab(tab);
@@ -162,7 +162,7 @@ const priv8 = {
       debug("Opening: " + url);
       browser.loadURI(url);
 
-      self.highlightBrowser(browser);
+      self.highlightBrowser(tab, browser);
     }
 
     browser.addEventListener("load", onLoad, true);
@@ -266,8 +266,6 @@ const priv8 = {
     }
 
     docShell.setIsApp(aId);
-    aTab.style.color = (aId == Ci.nsIScriptSecurityManager.NO_APP_ID
-                         ? "" : this._sandboxes[aId].color);
     return true;
   },
 
@@ -295,12 +293,13 @@ const priv8 = {
     debug("saved!");
   },
 
-  highlightBrowser: function(aBrowser) {
+  highlightBrowser: function(aTab, aBrowser) {
     debug("highlightBrowser");
 
     if (this._defaultBrowserStyle === null) {
       debug("First time, let's store the default style.");
       this._defaultBrowserStyle = aBrowser.style.border;
+      this._defaultTabStyle = aTab.style.color;
     }
 
     let docShell = aBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
@@ -308,6 +307,7 @@ const priv8 = {
     if (docShell.appId == Ci.nsIScriptSecurityManager.NO_APP_ID) {
       debug("Setting default color.");
       aBrowser.style.border = this._defaultBrowserStyle;
+      aTab.style.color = this._defaultTabStyle;
       return;
     }
 
@@ -320,6 +320,7 @@ const priv8 = {
 
     debug("Setting sandbox color.");
     aBrowser.style.border = "3px solid " + this._sandboxes[appId].color;
+    aTab.style.color = this._sandboxes[appId].color;
   },
 
   tabRestoring: function(aEvent) {
@@ -341,6 +342,6 @@ const priv8 = {
     let window = aTab.ownerDocument.defaultView;
     let innerTab = window.gBrowser.getBrowserForTab(aTab);
     this.configureWindow(aTab, innerTab.contentWindow, data.appId);
-    this.highlightBrowser(window.gBrowser);
+    this.highlightBrowser(aTab, window.gBrowser);
   }
 };
