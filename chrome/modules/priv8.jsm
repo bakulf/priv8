@@ -340,8 +340,8 @@ const priv8 = {
     }
 
     let window = aTab.ownerDocument.defaultView;
-    let innerTab = window.gBrowser.getBrowserForTab(aTab);
-    this.configureWindow(aTab, innerTab.contentWindow, data.appId);
-    this.highlightBrowser(aTab, window.gBrowser);
+    let browser = window.gBrowser.getBrowserForTab(aTab);
+    this.configureWindow(aTab, browser.contentWindow, data.appId);
+    this.highlightBrowser(aTab, browser);
   }
 };
