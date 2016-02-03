@@ -2,10 +2,14 @@
   "name": "priv8",
   "title": "Priv8",
   "id": "id@baku.priv8",
-  "description": "Run a website into a persistent sandbox",
+  "description": "Run websites into a persistent sandboxes",
   "author": "Andrea Marchesini",
   "license": "MPL 2.0",
-  "version": "0.0.9",
+  "version": "0.1.0",
+  "main": "lib/main.js",
+  "engines": {
+    "firefox": ">=38.0a1"
+  },
   "preferences": [{
     "name": "sandboxes",
     "title": "List of sandboxes",
