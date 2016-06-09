@@ -265,7 +265,9 @@ const priv8 = {
       return false;
     }
 
-    docShell.setIsApp(aId);
+    let attr = docShell.getOriginAttributes();
+    attr.appId = aId;
+    docShell.setOriginAttributes(attr);
     return true;
   },
 
