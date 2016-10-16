@@ -261,11 +261,12 @@ const priv8 = {
 
     let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                           .getInterface(Ci.nsIDocShell);
-    if (docShell.appId == aId) {
+    let attr = docShell.getOriginAttributes();
+
+    if (attr.appId == aId) {
       return false;
     }
 
-    let attr = docShell.getOriginAttributes();
     attr.appId = aId;
     docShell.setOriginAttributes(attr);
     return true;
@@ -306,14 +307,16 @@ const priv8 = {
 
     let docShell = aBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                                          .getInterface(Ci.nsIDocShell);
-    if (docShell.appId == Ci.nsIScriptSecurityManager.NO_APP_ID) {
+    let attr = docShell.getOriginAttributes();
+
+    if (attr.appId == Ci.nsIScriptSecurityManager.NO_APP_ID) {
       debug("Setting default color.");
       aBrowser.style.border = this._defaultBrowserStyle;
       aTab.style.color = this._defaultTabStyle;
       return;
     }
 
-    let appId = docShell.appId;
+    let appId = attr.appId;
     if (!(appId in this._sandboxes)) {
       debug("Setting default color.");
       aBrowser.style.border = this._defaultBrowserStyle;
