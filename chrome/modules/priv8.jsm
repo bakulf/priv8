@@ -251,6 +251,13 @@ const priv8 = {
     }
   },
 
+  getSandboxFromWindow: function(aWindow) {
+    let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+                          .getInterface(Ci.nsIDocShell);
+    let attr = docShell.getOriginAttributes();
+    return attr.appId;
+  },
+
   configureWindowByName: function(aTab, aWindow, aSandbox) {
     return this.configureWindow(aTab, aWindow, this.appIdForSandbox(aSandbox));
   },
@@ -346,7 +353,30 @@ const priv8 = {
 
     let window = aTab.ownerDocument.defaultView;
     let browser = window.gBrowser.getBrowserForTab(aTab);
-    this.configureWindow(aTab, browser.contentWindow, data.appId);
-    this.highlightBrowser(aTab, browser);
+
+    let self = this;
+    function restoreTabReal() {
+      self.configureWindow(aTab, browser.contentWindow, data.appId);
+      self.highlightBrowser(aTab, browser);
+    }
+
+    if (browser.currentURI.spec == 'about:blank') {
+      restoreTabReal();
+      return;
+    }
+
+    let url = browser.currentURI.spec;
+    function onLoad() {
+      if (browser.currentURI.spec != 'about:blank') {
+        return;
+      }
+
+      browser.removeEventListener("load", onLoad, true);
+      restoreTabReal();
+      browser.loadURI(url);
+    }
+
+    browser.addEventListener("load", onLoad, true);
+    browser.loadURI('about:blank');
   }
 };
