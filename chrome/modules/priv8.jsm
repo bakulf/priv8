@@ -46,7 +46,7 @@ const priv8 = {
     // nothing special
   },
 
-  appIdForSandbox: function(aSandbox) {
+  idForSandbox: function(aSandbox) {
     for (let i in this._sandboxes) {
       if (this._sandboxes[i].name == aSandbox) {
         return i;
@@ -141,13 +141,13 @@ const priv8 = {
     let self = this;
     function onLoad() {
       debug("Tab loaded!");
-      // First loading opens the waiting page - we are still with the old appId
+      // First loading opens the waiting page - we are still with the old sandbox
       if (browser.currentURI.spec == 'about:blank') {
         browser.loadURI(self._waitURL);
         return;
       }
 
-      // Here we are running with the right appId.
+      // Here we are running with the right sandbox.
       browser.removeEventListener("load", onLoad, true);
 
       let url = aURL;
@@ -259,12 +259,12 @@ const priv8 = {
   },
 
   configureWindowByName: function(aTab, aWindow, aSandbox) {
-    return this.configureWindow(aTab, aWindow, this.appIdForSandbox(aSandbox));
+    return this.configureWindow(aTab, aWindow, this.idForSandbox(aSandbox));
   },
 
   configureWindow: function(aTab, aWindow, aId) {
     this._sessionStore.setTabValue(aTab, this.TAB_DATA_IDENTIFIER,
-                                   JSON.stringify({ appId: aId }));
+                                   JSON.stringify({ priv8sandbox: aId }));
 
     let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                           .getInterface(Ci.nsIDocShell);
@@ -323,16 +323,16 @@ const priv8 = {
       return;
     }
 
-    let appId = attr.appId;
-    if (!(appId in this._sandboxes)) {
+    let id = attr.appId;
+    if (!(id in this._sandboxes)) {
       debug("Setting default color.");
       aBrowser.style.border = this._defaultBrowserStyle;
       return;
     }
 
     debug("Setting sandbox color.");
-    aBrowser.style.border = "3px solid " + this._sandboxes[appId].color;
-    aTab.style.color = this._sandboxes[appId].color;
+    aBrowser.style.border = "3px solid " + this._sandboxes[id].color;
+    aTab.style.color = this._sandboxes[id].color;
   },
 
   tabRestoring: function(aEvent) {
@@ -356,7 +356,8 @@ const priv8 = {
 
     let self = this;
     function restoreTabReal() {
-      self.configureWindow(aTab, browser.contentWindow, data.appId);
+      let id = "appId" in data ? data.appId : data.priv8sandbox;
+      self.configureWindow(aTab, browser.contentWindow, id);
       self.highlightBrowser(aTab, browser);
     }
 

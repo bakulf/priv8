@@ -18,8 +18,8 @@
     "value": "{}"
   },{
     "name": "maxLocalId",
-    "title": "The incremental appId",
-    "description": "The incremental appId",
+    "title": "The incremental sandbox Id",
+    "description": "The incremental sandbox Id",
     "type": "integer",
     "value": 1000
   }]
