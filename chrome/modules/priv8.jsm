@@ -251,11 +251,37 @@ const priv8 = {
     }
   },
 
+  getSandboxFromOriginAttributes: function(aAttr) {
+    if ("firstPartyDomain" in aAttr) {
+      debug("Using firstPartyDomain!");
+      return this.getSandboxFromOriginAttributesInternal(aAttr, "firstPartyDomain", "string");
+    }
+
+    if ("signedPkg" in aAttr) {
+      debug("Using signedPkg!");
+      return this.getSandboxFromOriginAttributesInternal(aAttr, "signedPkg", "string");
+    }
+
+    debug("Using appId!");
+    return this.getSandboxFromOriginAttributesInternal(aAttr, "appId", "int");
+  },
+
+  getSandboxFromOriginAttributesInternal: function(aAttr, aWhat, aType) {
+    if (aType == "string") {
+      if (aAttr[aWhat].indexOf("priv8-") != 0) {
+        return 0;
+      }
+
+      return parseInt(aAttr[aWhat].substring("priv8-".length), 10);
+    }
+
+    return aAttr[aWhat];
+  },
+
   getSandboxFromWindow: function(aWindow) {
     let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
                           .getInterface(Ci.nsIDocShell);
-    let attr = docShell.getOriginAttributes();
-    return attr.appId;
+    return this.getSandboxFromOriginAttributes(docShell.getOriginAttributes());
   },
 
   configureWindowByName: function(aTab, aWindow, aSandbox) {
@@ -270,11 +296,21 @@ const priv8 = {
                           .getInterface(Ci.nsIDocShell);
     let attr = docShell.getOriginAttributes();
 
-    if (attr.appId == aId) {
+    if (this.getSandboxFromOriginAttributes(attr) == aId) {
       return false;
     }
 
-    attr.appId = aId;
+    if ("firstPartyDomain" in attr) {
+      debug("Using firstPartyDomain!");
+      attr.firstPartyDomain = "priv8-" + aId;
+    } else if ("signedPkg" in attr) {
+      debug("Using signedId!");
+      attr.signedPkg = "priv8-" + aId;
+    } else {
+      debug("Using appId!");
+      attr.appId = aId;
+    }
+
     docShell.setOriginAttributes(attr);
     return true;
   },
@@ -316,14 +352,14 @@ const priv8 = {
                                          .getInterface(Ci.nsIDocShell);
     let attr = docShell.getOriginAttributes();
 
-    if (attr.appId == Ci.nsIScriptSecurityManager.NO_APP_ID) {
+    let id = this.getSandboxFromOriginAttributes(attr);
+    if (!id) {
       debug("Setting default color.");
       aBrowser.style.border = this._defaultBrowserStyle;
       aTab.style.color = this._defaultTabStyle;
       return;
     }
 
-    let id = attr.appId;
     if (!(id in this._sandboxes)) {
       debug("Setting default color.");
       aBrowser.style.border = this._defaultBrowserStyle;
