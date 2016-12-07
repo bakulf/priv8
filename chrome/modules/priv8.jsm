@@ -257,11 +257,6 @@ const priv8 = {
       return this.getSandboxFromOriginAttributesInternal(aAttr, "firstPartyDomain", "string");
     }
 
-    if ("signedPkg" in aAttr) {
-      debug("Using signedPkg!");
-      return this.getSandboxFromOriginAttributesInternal(aAttr, "signedPkg", "string");
-    }
-
     debug("Using appId!");
     return this.getSandboxFromOriginAttributesInternal(aAttr, "appId", "int");
   },
@@ -302,10 +297,7 @@ const priv8 = {
 
     if ("firstPartyDomain" in attr) {
       debug("Using firstPartyDomain!");
-      attr.firstPartyDomain = "priv8-" + aId;
-    } else if ("signedPkg" in attr) {
-      debug("Using signedId!");
-      attr.signedPkg = "priv8-" + aId;
+      attr.firstPartyDomain = aId ? "priv8-" + aId : "";
     } else {
       debug("Using appId!");
       attr.appId = aId;
