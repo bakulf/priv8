@@ -4,8 +4,8 @@
   "id": "id@baku.priv8",
   "description": "Run websites into a persistent sandboxes",
   "author": "Andrea Marchesini",
-  "license": "MPL 2.0",
-  "version": "0.1.6",
+  "license": "MPL 1.7",
+  "version": "0.2.0",
   "main": "lib/main.js",
   "engines": {
     "firefox": ">=38.0a1"

@@ -10,8 +10,6 @@ function Priv8Manager() {}
 
 // Initializer
 Priv8Manager.initialize = function() {
-  Services.obs.addObserver(Priv8Manager._sendPong, "Priv8-manager-ping", false);
-
   let win = window.QueryInterface(Ci.nsIInterfaceRequestor)
                   .getInterface(Ci.nsIWebNavigation)
                   .QueryInterface(Ci.nsIDocShellTreeItem)
@@ -37,17 +35,10 @@ Priv8Manager.initialize = function() {
 
 // Shutdown
 Priv8Manager.shutdown = function() {
-  Services.obs.removeObserver(Priv8Manager._sendPong, "Priv8-manager-ping");
-
   if (!window.priv8ManagerData) {
     return;
   }
 
   window.priv8ManagerData.shutdown();
   window.priv8ManagerData = null;
-}
-
-// Send a ping to inform when the UI is ready:
-Priv8Manager._sendPong = function(aSubject, aTopic, aData) {
-  Services.obs.notifyObservers(window, "Priv8-manager-pong", "");
 }

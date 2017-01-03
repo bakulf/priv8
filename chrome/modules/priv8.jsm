@@ -9,7 +9,7 @@ Cu.import("chrome://priv8/content/modules/priv8-colors.jsm");
 this.EXPORTED_SYMBOLS = ["priv8"];
 
 function debug(msg) {
-  //dump("Priv8.jsm - " + msg + "\n");
+  dump("Priv8.jsm - " + msg + "\n");
 }
 
 // Priv8 Component
@@ -130,42 +130,42 @@ const priv8 = {
       return;
     }
 
-    let tab = browser.addTab("about:blank");
+    let tab = browser.addTab(this._waitURL);
     browser.selectedTab = tab;
 
-    browser = browser.getBrowserForTab(tab);
-
-    debug("Opening a new tab with the sandbox");
-    this.configureWindow(tab, browser.contentWindow, aId);
+    let tabBrowser = browser.getBrowserForTab(tab);
 
     let self = this;
     function onLoad() {
       debug("Tab loaded!");
       // First loading opens the waiting page - we are still with the old sandbox
-      if (browser.currentURI.spec == 'about:blank') {
-        browser.loadURI(self._waitURL);
+      if (tabBrowser.currentURI.spec != 'about:blank') {
+        tabBrowser.loadURI('about:blank');
         return;
       }
 
       // Here we are running with the right sandbox.
-      browser.removeEventListener("load", onLoad, true);
+      tabBrowser.removeEventListener("load", onLoad, true);
 
-      let url = aURL;
-      if (!url) {
-        url = self._sandboxes[aId].url;
-      }
+      debug("Opening a new tab with the sandbox");
+      self.configureWindow(tab, tabBrowser, aId, () => {
+        let url = aURL;
+        if (!url) {
+          url = self._sandboxes[aId].url;
+        }
 
-      if (typeof(url) != "string" || url.length == 0) {
-        url = self._readmeURL;
-      }
+        if (typeof(url) != "string" || url.length == 0) {
+          url = self._readmeURL;
+        }
 
-      debug("Opening: " + url);
-      browser.loadURI(url);
+        debug("Opening: " + url);
+        tabBrowser.loadURI(url);
 
-      self.highlightBrowser(tab, browser);
+        self.highlightBrowser(tab, tabBrowser);
+      });
     }
 
-    browser.addEventListener("load", onLoad, true);
+    tabBrowser.addEventListener("load", onLoad, true);
   },
 
   renameSandbox: function(aId, aName) {
@@ -273,38 +273,32 @@ const priv8 = {
     return aAttr[aWhat];
   },
 
-  getSandboxFromWindow: function(aWindow) {
-    let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
-                          .getInterface(Ci.nsIDocShell);
-    return this.getSandboxFromOriginAttributes(docShell.getOriginAttributes());
+  configureWindowByName: function(aTab, aBrowser, aSandbox, aCb) {
+    return this.configureWindow(aTab, aBrowser, this.idForSandbox(aSandbox), aCb);
   },
 
-  configureWindowByName: function(aTab, aWindow, aSandbox) {
-    return this.configureWindow(aTab, aWindow, this.idForSandbox(aSandbox));
-  },
+  configureWindow: function(aTab, aBrowser, aId, aCb = null) {
+    if (!aCb) { aCb = function(aStatus) {} }
 
-  configureWindow: function(aTab, aWindow, aId) {
     this._sessionStore.setTabValue(aTab, this.TAB_DATA_IDENTIFIER,
                                    JSON.stringify({ priv8sandbox: aId }));
 
-    let docShell = aWindow.QueryInterface(Ci.nsIInterfaceRequestor)
-                          .getInterface(Ci.nsIDocShell);
-    let attr = docShell.getOriginAttributes();
+    this.getOriginAttributes(aBrowser, (aAttr) => {
+      if (this.getSandboxFromOriginAttributes(aAttr) == aId) {
+        aCb(false);
+        return;
+      }
 
-    if (this.getSandboxFromOriginAttributes(attr) == aId) {
-      return false;
-    }
+      if ("firstPartyDomain" in aAttr) {
+        debug("Using firstPartyDomain!");
+        aAttr.firstPartyDomain = aId ? "priv8-" + aId : "";
+      } else {
+        debug("Using appId!");
+        aAttr.appId = aId;
+      }
 
-    if ("firstPartyDomain" in attr) {
-      debug("Using firstPartyDomain!");
-      attr.firstPartyDomain = aId ? "priv8-" + aId : "";
-    } else {
-      debug("Using appId!");
-      attr.appId = aId;
-    }
-
-    docShell.setOriginAttributes(attr);
-    return true;
+      this.setOriginAttributes(aBrowser, aAttr, () => { aCb(true); });
+    });
   },
 
   _randomColor: function() {
@@ -331,6 +325,89 @@ const priv8 = {
     debug("saved!");
   },
 
+  getOriginAttributes: function(aBrowser, aCb) {
+    if (!aBrowser.contentWindow || !aBrowser.contentWindow.QueryInterface) {
+      debug("e10s mode");
+
+      var mm = aBrowser.messageManager;
+      if (!mm) {
+        aCb({});
+        return;
+      }
+
+      var listener = {
+        receiveMessage: function(aMsg) {
+          mm.removeMessageListener("priv8-oa", listener);
+          aCb(aMsg.data);
+        }
+      }
+      mm.addMessageListener("priv8-oa", listener);
+
+      function scriptFunction() {
+        sendAsyncMessage("priv8-oa", docShell.getOriginAttributes());
+      }
+
+      debug("Loading script...");
+      var scriptString = scriptFunction.toString();
+      var scriptSource = scriptString.substring(scriptString.indexOf('\n') + 1, scriptString.length - 1);
+      mm.loadFrameScript('data:,' + scriptSource, true);
+      return;
+    }
+
+    debug("non-e10s mode");
+    let docShell = aBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+                                         .getInterface(Ci.nsIDocShell);
+    aCb(docShell.getOriginAttributes());
+  },
+
+  setOriginAttributes: function(aBrowser, aAttr, aCb) {
+    var mm = aBrowser.messageManager;
+    if (mm) {
+      debug("e10s mode");
+
+      function scriptFunction() {
+        function priv8msg(aMsg) {
+          removeMessageListener("priv8-oa", priv8msg);
+          docShell.setOriginAttributes(aMsg.data);
+          sendAsyncMessage("priv8-oa-done");
+        };
+        addMessageListener("priv8-oa", priv8msg);
+        sendAsyncMessage("priv8-oa-ready");
+      }
+
+      debug("Loading script...");
+      var scriptString = scriptFunction.toString();
+      var scriptSource = scriptString.substring(scriptString.indexOf('\n') + 1, scriptString.length - 1);
+      mm.loadFrameScript('data:,' + scriptSource, true);
+
+      var listener = {
+        receiveMessage: function(aMsg) {
+          switch (aMsg.name) {
+            case 'priv8-oa-ready':
+              debug("Content is ready, setting OA");
+              mm.removeMessageListener("priv8-oa-ready", listener);
+              mm.sendAsyncMessage("priv8-oa", aAttr);
+              break;
+            case 'priv8-oa-done':
+              debug("Content has done.");
+              mm.removeMessageListener("priv8-oa-done", listener);
+              aCb();
+              break;
+          }
+        }
+      }
+      mm.addMessageListener("priv8-oa-ready", listener);
+      mm.addMessageListener("priv8-oa-done", listener);
+      return;
+    }
+
+    debug("non-e10s mode");
+    let docShell = aBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
+                                         .getInterface(Ci.nsIDocShell);
+    docShell.setOriginAttributes(aAttr);
+    aCb();
+  },
+
   highlightBrowser: function(aTab, aBrowser) {
     debug("highlightBrowser");
 
@@ -340,27 +417,25 @@ const priv8 = {
       this._defaultTabStyle = aTab.style.color;
     }
 
-    let docShell = aBrowser.contentWindow.QueryInterface(Ci.nsIInterfaceRequestor)
-                                         .getInterface(Ci.nsIDocShell);
-    let attr = docShell.getOriginAttributes();
+    this.getOriginAttributes(aBrowser, (aAttr) => {
+      let id = this.getSandboxFromOriginAttributes(aAttr);
+      if (!id) {
+        debug("Setting default color.");
+        aBrowser.style.border = this._defaultBrowserStyle;
+        aTab.style.color = this._defaultTabStyle;
+        return;
+      }
 
-    let id = this.getSandboxFromOriginAttributes(attr);
-    if (!id) {
-      debug("Setting default color.");
-      aBrowser.style.border = this._defaultBrowserStyle;
-      aTab.style.color = this._defaultTabStyle;
-      return;
-    }
+      if (!(id in this._sandboxes)) {
+        debug("Setting default color.");
+        aBrowser.style.border = this._defaultBrowserStyle;
+        return;
+      }
 
-    if (!(id in this._sandboxes)) {
-      debug("Setting default color.");
-      aBrowser.style.border = this._defaultBrowserStyle;
-      return;
-    }
-
-    debug("Setting sandbox color.");
-    aBrowser.style.border = "3px solid " + this._sandboxes[id].color;
-    aTab.style.color = this._sandboxes[id].color;
+      debug("Setting sandbox color.");
+      aBrowser.style.border = "3px solid " + this._sandboxes[id].color;
+      aTab.style.color = this._sandboxes[id].color;
+    });
   },
 
   tabRestoring: function(aEvent) {
@@ -385,7 +460,7 @@ const priv8 = {
     let self = this;
     function restoreTabReal() {
       let id = "appId" in data ? data.appId : data.priv8sandbox;
-      self.configureWindow(aTab, browser.contentWindow, id);
+      self.configureWindow(aTab, browser, id);
       self.highlightBrowser(aTab, browser);
     }
 

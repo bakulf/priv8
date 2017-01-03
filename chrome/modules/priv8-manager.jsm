@@ -374,6 +374,12 @@ this.Priv8ManagerData.prototype = {
       { funcName: 'pageAbout',  id: 'category-about',  page_id: 'about-view',  obj: new Priv8ManagerAbout(aWindow, aDocument)  }
     ];
 
+    for (let i = 0; i < this.pages.length; ++i) {
+      this[this.pages[i].funcName] = () => {
+        this.node.selectItem(this.document.getElementById(this.pages[i].id));
+      };
+    }
+
     // Event listener:
     let self = this;
     this.node.addEventListener("select", function() { self._pageSelected(); }, false);
@@ -401,15 +407,6 @@ this.Priv8ManagerData.prototype = {
         this.pages[i].obj.show();
       } else {
         this.document.getElementById(this.pages[i].page_id).hidden = true;
-      }
-    }
-  },
-
-  __noSuchMethod__ : function(aId, aArgs) {
-    for (let i = 0; i < this.pages.length; ++i) {
-      if (aId == this.pages[i].funcName) {
-        this.node.selectItem(this.document.getElementById(this.pages[i].id));
-        break;
       }
     }
   }
