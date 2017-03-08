@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-Components.utils.import("resource://gre/modules/Services.jsm");
-Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
-Components.utils.import("chrome://priv8/content/modules/priv8.jsm");
-Components.utils.import("chrome://priv8/content/modules/priv8-colors.jsm");
+const {classes: Cc, interfaces: Ci, utils: Cu, results: Cr} = Components;
+
+Cu.import("resource://gre/modules/Services.jsm");
+Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+Cu.import("chrome://priv8/content/modules/priv8.jsm");
+Cu.import("chrome://priv8/content/modules/priv8-colors.jsm");
 
 function debug(msg) {
   //dump("Priv8-manager.jsm - " + msg + "\n");
@@ -49,8 +51,8 @@ Priv8ManagerSettings.prototype = {
     this._document = aDocument;
 
     this._browser = this._document.getElementById('settings-browser');
-    this._browser.addProgressListener(this, Components.interfaces.nsIWebProgress.NOTIFY_ALL |
-                                            Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL);
+    this._browser.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_ALL |
+                                            Ci.nsIWebProgress.NOTIFY_STATE_ALL);
   },
 
   shutdown: function() {
@@ -68,7 +70,7 @@ Priv8ManagerSettings.prototype = {
     debug("Settings show");
 
     this._browser.loadURIWithFlags('chrome://priv8/content/manager/settings.html',
-                                   Components.interfaces.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY);
+                                   Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY);
   },
 
   // For progress listener
@@ -80,12 +82,12 @@ Priv8ManagerSettings.prototype = {
 
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
     // Don't care about state but window
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW))) {
+    if (!(aStateFlags & (Ci.nsIWebProgressListener.STATE_IS_WINDOW))) {
       return;
     }
 
     // Only when the operation is concluded
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_STOP))) {
+    if (!(aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP))) {
       return;
     }
 
@@ -278,15 +280,15 @@ Priv8ManagerSettings.prototype = {
 
   needPrompt: function() {
     if (!this._prompt) {
-      this._prompt = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
-                               .getService(Components.interfaces.nsIPromptService);
+      this._prompt = Cc["@mozilla.org/embedcomp/prompt-service;1"]
+                       .getService(Ci.nsIPromptService);
     }
   },
 
   onStatusChange: function() {},
 
-  QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIWebProgressListener,
-                       Components.interfaces.nsISupportsWeakReference])
+  QueryInterface: XPCOMUtils.generateQI([Ci.nsIWebProgressListener,
+                       Ci.nsISupportsWeakReference])
 };
 
 // Object for the 'about' view:
@@ -306,8 +308,8 @@ Priv8ManagerAbout.prototype = {
     this._document = aDocument;
 
     this._browser = this._document.getElementById('about-browser');
-    this._browser.addProgressListener(this, Components.interfaces.nsIWebProgress.NOTIFY_ALL |
-                                            Components.interfaces.nsIWebProgress.NOTIFY_STATE_ALL);
+    this._browser.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_ALL |
+                                            Ci.nsIWebProgress.NOTIFY_STATE_ALL);
   },
 
   shutdown: function() {
@@ -323,7 +325,7 @@ Priv8ManagerAbout.prototype = {
     debug("about show");
 
     this._browser.loadURIWithFlags('chrome://priv8/content/manager/about.html',
-                                   Components.interfaces.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY);
+                                   Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY);
   },
 
   // For progress listener
@@ -335,12 +337,12 @@ Priv8ManagerAbout.prototype = {
 
   onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
     // Don't care about state but window
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_IS_WINDOW))) {
+    if (!(aStateFlags & (Ci.nsIWebProgressListener.STATE_IS_WINDOW))) {
       return;
     }
 
     // Only when the operation is concluded
-    if (!(aStateFlags & (Components.interfaces.nsIWebProgressListener.STATE_STOP))) {
+    if (!(aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP))) {
       return;
     }
 
@@ -350,8 +352,95 @@ Priv8ManagerAbout.prototype = {
 
   onStatusChange: function() {},
 
-  QueryInterface: XPCOMUtils.generateQI([Components.interfaces.nsIWebProgressListener,
-                                         Components.interfaces.nsISupportsWeakReference])
+  QueryInterface: XPCOMUtils.generateQI([Ci.nsIWebProgressListener,
+                                         Ci.nsISupportsWeakReference])
+};
+
+// Object for the 'help' view:
+function Priv8ManagerHelp(aWindow, aDocument) {
+  this.initialize(aWindow, aDocument);
+}
+Priv8ManagerHelp.prototype = {
+  _browser: null,
+
+  _document: null,
+  _window: null,
+
+  initialize: function(aWindow, aDocument) {
+    debug("help initialize");
+
+    this._window = aWindow;
+    this._document = aDocument;
+
+    this._browser = this._document.getElementById('help-browser');
+    this._browser.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_ALL |
+                                            Ci.nsIWebProgress.NOTIFY_STATE_ALL);
+  },
+
+  shutdown: function() {
+    debug("help shutdown");
+
+    this._browser = null;
+
+    this._document = null;
+    this._window = null;
+  },
+
+  show: function() {
+    debug("help show");
+
+    this._browser.loadURIWithFlags('chrome://priv8/content/manager/help.html',
+                                   Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY);
+  },
+
+  // For progress listener
+  onLocationChange: function(aWebProgress, aRequest, aLocation) {},
+
+  onProgressChange: function() {},
+
+  onSecurityChange: function(aWebProgress, aRequest, aState) {},
+
+  onStateChange: function(aWebProgress, aRequest, aStateFlags, aStatus) {
+    // Don't care about state but window
+    if (!(aStateFlags & (Ci.nsIWebProgressListener.STATE_IS_WINDOW))) {
+      return;
+    }
+
+    // Only when the operation is concluded
+    if (!(aStateFlags & (Ci.nsIWebProgressListener.STATE_STOP))) {
+      return;
+    }
+
+    // Translate
+    priv8Translate(this._document.getElementById("priv8strings"), this._browser);
+
+    this._browser.contentDocument.getElementById("priv8help").addEventListener("click", () => {
+      let mainWindow = this._window.QueryInterface(Ci.nsIInterfaceRequestor)
+                                   .getInterface(Ci.nsIWebNavigation)
+                                   .QueryInterface(Ci.nsIDocShellTreeItem)
+                                   .rootTreeItem
+                                   .QueryInterface(Ci.nsIInterfaceRequestor)
+                                   .getInterface(Ci.nsIDOMWindow);
+      if (!mainWindow) {
+        dump("Error getting the mainWindow\n");
+        return;
+      }
+
+      let browser = mainWindow.gBrowser;
+      if (!browser) {
+        dump("Error getting the browser\n");
+        return;
+      }
+
+      let tab = browser.addTab("https://testpilot.firefox.com/experiments/containers");
+      browser.selectedTab = tab;
+    });
+  },
+
+  onStatusChange: function() {},
+
+  QueryInterface: XPCOMUtils.generateQI([Ci.nsIWebProgressListener,
+                                         Ci.nsISupportsWeakReference])
 };
 
 // Object data
@@ -373,7 +462,8 @@ this.Priv8ManagerData.prototype = {
     this.node = aDocument.getElementById("categories");
     this.pages = [
       { funcName: 'pageSettings', id: 'category-settings', page_id: 'settings-view', obj: new Priv8ManagerSettings(aWindow, aDocument) },
-      { funcName: 'pageAbout',  id: 'category-about',  page_id: 'about-view',  obj: new Priv8ManagerAbout(aWindow, aDocument)  }
+      { funcName: 'pageAbout',  id: 'category-about',  page_id: 'about-view',  obj: new Priv8ManagerAbout(aWindow, aDocument)  },
+      { funcName: 'pageHelp',  id: 'category-help',  page_id: 'help-view',  obj: new Priv8ManagerHelp(aWindow, aDocument)  }
     ];
 
     for (let i = 0; i < this.pages.length; ++i) {

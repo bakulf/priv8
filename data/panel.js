@@ -4,7 +4,7 @@
 
 let selectElm = document.getElementById("priv8-panel-select");
 
-let buttons = [ 'manager', 'about' ];
+let buttons = [ 'manager', 'about', 'help' ];
 for (let i = 0; i < buttons.length; ++i) {
   createButton(buttons[i]);
 }

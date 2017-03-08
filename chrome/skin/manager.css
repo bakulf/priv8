@@ -178,6 +178,10 @@ richlistitem:not([selected]) * {
   list-style-image: url("chrome://priv8/skin/manager-about.png");
 }
 
+#category-help > .category-icon {
+  list-style-image: url("chrome://priv8/skin/manager-about.png");
+}
+
 /*** header ***/
 
 #header {

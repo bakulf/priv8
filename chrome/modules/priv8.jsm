@@ -11,7 +11,7 @@ Cu.import("chrome://priv8/content/modules/priv8-colors.jsm");
 this.EXPORTED_SYMBOLS = ["priv8"];
 
 function debug(msg) {
-  dump("Priv8.jsm - " + msg + "\n");
+  //dump("Priv8.jsm - " + msg + "\n");
 }
 
 // Priv8 Component

@@ -39,6 +39,10 @@
                     class="category"
                     name="&Priv8.aboutPage;"
                     tooltiptext="&Priv8.aboutTooltip;" />
+      <richlistitem id="category-help"
+                    class="category"
+                    name="&Priv8.helpPage;"
+                    tooltiptext="&Priv8.helpTooltip;" />
     </richlistbox>
 
     <box id="view-port-container" flex="1">
@@ -55,6 +59,12 @@
         <!-- about view -->
         <vbox id="about-view" flex="1" class="view-pane" align="stretch">
           <browser id="about-browser" type="content" flex="1"
+                   disablehistory="true" homepage="about:blank"/>
+        </vbox>
+
+        <!-- help view -->
+        <vbox id="help-view" flex="1" class="view-pane" align="stretch">
+          <browser id="help-browser" type="content" flex="1"
                    disablehistory="true" homepage="about:blank"/>
         </vbox>
 
