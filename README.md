@@ -1,3 +1,10 @@
+Deprecated addon!
+=================
+
+This addon is deprecated. You should use Containers instead.
+
+https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/
+
 Priv8
 =====
 
