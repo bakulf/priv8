@@ -39,10 +39,10 @@
                     class="category"
                     name="&Priv8.aboutPage;"
                     tooltiptext="&Priv8.aboutTooltip;" />
-      <richlistitem id="category-help"
+      <richlistitem id="category-deprecated"
                     class="category"
-                    name="&Priv8.helpPage;"
-                    tooltiptext="&Priv8.helpTooltip;" />
+                    name="&Priv8.deprecatedPage;"
+                    tooltiptext="&Priv8.deprecatedTooltip;" />
     </richlistbox>
 
     <box id="view-port-container" flex="1">
@@ -62,9 +62,9 @@
                    disablehistory="true" homepage="about:blank"/>
         </vbox>
 
-        <!-- help view -->
-        <vbox id="help-view" flex="1" class="view-pane" align="stretch">
-          <browser id="help-browser" type="content" flex="1"
+        <!-- deprecated view -->
+        <vbox id="deprecated-view" flex="1" class="view-pane" align="stretch">
+          <browser id="deprecated-browser" type="content" flex="1"
                    disablehistory="true" homepage="about:blank"/>
         </vbox>
 

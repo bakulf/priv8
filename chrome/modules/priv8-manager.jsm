@@ -356,29 +356,29 @@ Priv8ManagerAbout.prototype = {
                                          Ci.nsISupportsWeakReference])
 };
 
-// Object for the 'help' view:
-function Priv8ManagerHelp(aWindow, aDocument) {
+// Object for the 'deprecated' view:
+function Priv8ManagerDeprecated(aWindow, aDocument) {
   this.initialize(aWindow, aDocument);
 }
-Priv8ManagerHelp.prototype = {
+Priv8ManagerDeprecated.prototype = {
   _browser: null,
 
   _document: null,
   _window: null,
 
   initialize: function(aWindow, aDocument) {
-    debug("help initialize");
+    debug("deprecated initialize");
 
     this._window = aWindow;
     this._document = aDocument;
 
-    this._browser = this._document.getElementById('help-browser');
+    this._browser = this._document.getElementById('deprecated-browser');
     this._browser.addProgressListener(this, Ci.nsIWebProgress.NOTIFY_ALL |
                                             Ci.nsIWebProgress.NOTIFY_STATE_ALL);
   },
 
   shutdown: function() {
-    debug("help shutdown");
+    debug("deprecated shutdown");
 
     this._browser = null;
 
@@ -387,9 +387,9 @@ Priv8ManagerHelp.prototype = {
   },
 
   show: function() {
-    debug("help show");
+    debug("deprecated show");
 
-    this._browser.loadURIWithFlags('chrome://priv8/content/manager/help.html',
+    this._browser.loadURIWithFlags('chrome://priv8/content/manager/deprecated.html',
                                    Ci.nsIWebNavigation.LOAD_FLAGS_REPLACE_HISTORY);
   },
 
@@ -414,7 +414,7 @@ Priv8ManagerHelp.prototype = {
     // Translate
     priv8Translate(this._document.getElementById("priv8strings"), this._browser);
 
-    this._browser.contentDocument.getElementById("priv8help").addEventListener("click", () => {
+    this._browser.contentDocument.getElementById("priv8deprecated").addEventListener("click", () => {
       let mainWindow = this._window.QueryInterface(Ci.nsIInterfaceRequestor)
                                    .getInterface(Ci.nsIWebNavigation)
                                    .QueryInterface(Ci.nsIDocShellTreeItem)
@@ -432,7 +432,7 @@ Priv8ManagerHelp.prototype = {
         return;
       }
 
-      let tab = browser.addTab("https://testpilot.firefox.com/experiments/containers");
+      let tab = browser.addTab("https://addons.mozilla.org/en-US/firefox/addon/multi-account-containers/");
       browser.selectedTab = tab;
     });
   },
@@ -463,7 +463,7 @@ this.Priv8ManagerData.prototype = {
     this.pages = [
       { funcName: 'pageSettings', id: 'category-settings', page_id: 'settings-view', obj: new Priv8ManagerSettings(aWindow, aDocument) },
       { funcName: 'pageAbout',  id: 'category-about',  page_id: 'about-view',  obj: new Priv8ManagerAbout(aWindow, aDocument)  },
-      { funcName: 'pageHelp',  id: 'category-help',  page_id: 'help-view',  obj: new Priv8ManagerHelp(aWindow, aDocument)  }
+      { funcName: 'pageDeprecated',  id: 'category-deprecated',  page_id: 'deprecated-view',  obj: new Priv8ManagerDeprecated(aWindow, aDocument)  }
     ];
 
     for (let i = 0; i < this.pages.length; ++i) {
